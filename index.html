@@ -65,8 +65,6 @@ const MANAGERS=[
   {name:"Натали",url:"https://t.me/hellonatalii"}
 ];
 
-// Демонстрационные товары. Позже заменим их данными из каталога бота.
-const products=[
 let products = [];
 
 async function loadCatalog() {
@@ -97,7 +95,6 @@ async function loadCatalog() {
     console.error('Не удалось загрузить каталог:', error);
   }
 }
-];
 
 const placeholder='data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="500"><rect width="100%" height="100%" fill="#24221f"/><text x="50%" y="47%" fill="#c5a879" text-anchor="middle" font-family="Georgia" font-size="28">MATRESHKI</text><text x="50%" y="54%" fill="#aaa" text-anchor="middle" font-size="12" letter-spacing="4">PARFUM</text></svg>`);
 
