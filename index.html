@@ -40,7 +40,7 @@ footer{text-align:center;padding:25px 10px;color:var(--muted);font-size:11px;let
   <div class="subtitle">ПАРФЮМ РАСПИВ</div>
 </header>
 <main>
-  <div class="note">Нишевая парфюмерия в распиве. Выбирай аромат, смотри наличие и цену за миллилитр, а заказ оформляй у менеджера.</div>
+  <div class="note">Нишевая парфюмерия в распиве. Выбирайте аромат, смотрите наличие и цену за миллилитр, а заказ оформляйте у администратора.</div>
   <input id="search" placeholder="⌕  Поиск аромата или бренда">
   <div class="filters">
     <select id="category">
@@ -125,7 +125,7 @@ function render() {
   const name=document.createElement('div'); name.className='name'; name.textContent=p.name;
   const desc=document.createElement('div'); desc.className='desc'; desc.textContent=p.description;
   const price=document.createElement('div'); price.className='price'; price.textContent=p.pricePerMl>0 ? p.pricePerMl.toLocaleString('ru-RU')+' ₽ / мл' : 'Цена уточняется';
-  const stock=document.createElement('div'); stock.className='desc'; stock.textContent=p.stockMl>0 ? 'В наличии: '+p.stockMl.toLocaleString('ru-RU')+' мл' : (p.legacyVolumes || 'Остаток уточняйте у менеджера');
+  const stock=document.createElement('div'); stock.className='desc'; stock.textContent=p.stockMl>0 ? 'В наличии: '+p.stockMl.toLocaleString('ru-RU')+' мл' : (p.legacyVolumes || 'Остаток уточняйте у администратора');
   const buy=document.createElement('button'); buy.className='buy'; buy.textContent='Уточнить и купить';
   buy.addEventListener('click',()=>window.open(managerUrl(p.manager),'_blank','noopener'));
   info.append(brand,name,desc,price,stock,buy); card.append(img,info); root.append(card);
