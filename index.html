@@ -67,9 +67,36 @@ const MANAGERS=[
 
 // Демонстрационные товары. Позже заменим их данными из каталога бота.
 const products=[
- {brand:"Profumum Roma",name:"Пример аромата № 1",category:"Гурманские",description:"Добавим описание и ноты аромата.",price:900,volumes:"2 мл · 5 мл · 10 мл",manager:0,image:""},
- {brand:"Niche Parfum",name:"Пример аромата № 2",category:"Свежие",description:"Лёгкое знакомство с нишевой парфюмерией.",price:650,volumes:"2 мл · 5 мл · 10 мл",manager:1,image:""},
- {brand:"Niche Parfum",name:"Пример аромата № 3",category:"Древесные",description:"Здесь появятся реальные ноты и описание.",price:750,volumes:"2 мл · 5 мл · 10 мл",manager:0,image:""}
+let products = [];
+
+async function loadCatalog() {
+  try {
+    const response = await fetch('./catalog.json');
+    if (!response.ok) throw new Error('Ошибка загрузки каталога');
+
+    const data = await response.json();
+
+    products = data.map(p => {
+      const match = String(p.volumes || '').match(/(\d+(?:[.,]\d+)?)\s*мл\s*[-–—:]\s*(\d+)\s*(?:р|₽)/i);
+
+      return {
+        id: p.id,
+        brand: 'Матрешки Парфюм',
+        name: p.name,
+        category: '',
+        description: 'Нишевый аромат',
+        price: match ? Number(match[2]) : 0,
+        volumes: p.volumes || '',
+        manager: p.manager === 'hellonatalii' ? 1 : 0,
+        image: ''
+      };
+    });
+
+    render();
+  } catch (error) {
+    console.error('Не удалось загрузить каталог:', error);
+  }
+}
 ];
 
 const placeholder='data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="500"><rect width="100%" height="100%" fill="#24221f"/><text x="50%" y="47%" fill="#c5a879" text-anchor="middle" font-family="Georgia" font-size="28">MATRESHKI</text><text x="50%" y="54%" fill="#aaa" text-anchor="middle" font-size="12" letter-spacing="4">PARFUM</text></svg>`);
@@ -102,7 +129,7 @@ function render(){
  });
 }
 ['search','category','sort'].forEach(id=>document.getElementById(id).addEventListener(id==='search'?'input':'change',render));
-render();
+loadCatalog();
 </script>
 </body>
 </html>
