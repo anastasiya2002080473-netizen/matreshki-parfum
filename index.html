@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -24,7 +23,7 @@ input,select{width:100%;background:var(--card);border:1px solid var(--line);bord
 .product-info{padding:12px}
 .brand{font-size:10px;letter-spacing:1.5px;color:var(--gold);text-transform:uppercase}
 .name{font-family:Georgia,serif;font-size:18px;margin:7px 0}
-.desc{font-size:12px;color:var(--muted);line-height:1.45;min-height:34px}
+.desc{font-size:12px;color:var(--muted);line-height:1.45;min-height:20px;white-space:pre-wrap}
 .price{font-size:15px;margin:12px 0}
 button,.buy{border:1px solid var(--gold);background:var(--gold);color:#17130e;padding:12px 10px;border-radius:8px;font-weight:600;cursor:pointer;text-decoration:none;text-align:center;font-size:13px;display:block;width:100%}
 .empty{padding:30px 10px;text-align:center;color:var(--muted);grid-column:1/-1}
@@ -39,7 +38,7 @@ footer{text-align:center;padding:25px 10px;color:var(--muted);font-size:11px;let
 </header>
 <main>
   <div class="intro">Ароматы с характером</div>
-  <div class="note">Нишевая парфюмерия в распиве. Выбирай аромат, знакомься с доступными объёмами и оформляй заказ у менеджера.</div>
+  <div class="note">Нишевая парфюмерия в распиве. Выбирай аромат, смотри наличие и цену за миллилитр, а заказ оформляй у менеджера.</div>
   <input id="search" placeholder="⌕  Поиск аромата или бренда">
   <div class="filters">
     <select id="category">
@@ -56,73 +55,78 @@ footer{text-align:center;padding:25px 10px;color:var(--muted);font-size:11px;let
       <option value="az">По названию</option>
     </select>
   </div>
-  <div class="grid" id="products"></div>
+  <div class="grid" id="products"><div class="empty">Загружаем каталог…</div></div>
 </main>
 <footer>МАТРЕШКИ PARFUM · АРОМАТЫ, КОТОРЫЕ ОСТАЮТСЯ</footer>
 <script>
-const MANAGERS=[
-  {name:"Натали",url:"https://t.me/ciaonatalie"},
-  {name:"Натали",url:"https://t.me/hellonatalii"}
-];
-
+const API_URL = "https://script.google.com/macros/s/AKfycbxiUdZ0WWrmMz5ZNviCajKP7op4HuKkH88ay2fJpjsSycw_24vRQnR_Hak2cYyz-IvbTQ/exec";
+const MANAGERS = {
+  ciaonatalie: "https://t.me/ciaonatalie",
+  hellonatalii: "https://t.me/hellonatalii"
+};
 let products = [];
+const placeholder = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="500"><rect width="100%" height="100%" fill="#24221f"/><text x="50%" y="47%" fill="#c5a879" text-anchor="middle" font-family="Georgia" font-size="28">MATRESHKI</text><text x="50%" y="54%" fill="#aaa" text-anchor="middle" font-size="12" letter-spacing="4">PARFUM</text></svg>`);
 
-async function loadCatalog() {
-  try {
-    const response = await fetch('./catalog.json');
-    if (!response.ok) throw new Error('Ошибка загрузки каталога');
-
-    const data = await response.json();
-
-    products = data.map(p => {
-      const match = String(p.volumes || '').match(/(\d+(?:[.,]\d+)?)\s*мл\s*[-–—:]\s*(\d+)\s*(?:р|₽)/i);
-
-      return {
-        id: p.id,
-        brand: 'Матрешки Парфюм',
-        name: p.name,
-        category: '',
-        description: 'Нишевый аромат',
-        price: match ? Number(match[2]) : 0,
-        volumes: p.volumes || '',
-        manager: p.manager === 'hellonatalii' ? 1 : 0,
-        image: ''
-      };
-    });
-
-    render();
-  } catch (error) {
-    console.error('Не удалось загрузить каталог:', error);
-  }
+function managerUrl(manager) {
+  if (String(manager).includes('http')) return String(manager);
+  return MANAGERS[String(manager || '').replace('@','')] || MANAGERS.ciaonatalie;
 }
-
-const placeholder='data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="500"><rect width="100%" height="100%" fill="#24221f"/><text x="50%" y="47%" fill="#c5a879" text-anchor="middle" font-family="Georgia" font-size="28">MATRESHKI</text><text x="50%" y="54%" fill="#aaa" text-anchor="middle" font-size="12" letter-spacing="4">PARFUM</text></svg>`);
-
-function render(){
- const q=document.getElementById('search').value.trim().toLowerCase();
- const cat=document.getElementById('category').value;
- const sort=document.getElementById('sort').value;
- let list=products.filter(p=>(p.name+' '+p.brand+' '+p.description).toLowerCase().includes(q)&&(!cat||p.category===cat));
- if(sort==='low')list.sort((a,b)=>a.price-b.price);
- if(sort==='high')list.sort((a,b)=>b.price-a.price);
- if(sort==='az')list.sort((a,b)=>a.name.localeCompare(b.name,'ru'));
- const root=document.getElementById('products');
- root.innerHTML='';
- if(!list.length){root.innerHTML='<div class="empty">Ничего не найдено. Попробуй изменить поиск.</div>';return;}
- list.forEach(p=>{
-  const card=document.createElement('article');
-  card.className='product';
-  const img=document.createElement('img');
-  img.src=p.image||placeholder;img.alt=p.brand+' '+p.name;
-  const info=document.createElement('div');info.className='product-info';
-  const brand=document.createElement('div');brand.className='brand';brand.textContent=p.brand;
-  const name=document.createElement('div');name.className='name';name.textContent=p.name;
-  const desc=document.createElement('div');desc.className='desc';desc.textContent=p.description;
-  const price=document.createElement('div');price.className='price';price.textContent='от '+p.price.toLocaleString('ru-RU')+' ₽';
-  const volumes=document.createElement('div');volumes.className='desc';volumes.textContent=p.volumes;
-  const buy=document.createElement('button');buy.className='buy';buy.textContent='Уточнить и купить';
-  buy.addEventListener('click',()=>window.open(MANAGERS[p.manager].url,'_blank','noopener'));
-  info.append(brand,name,desc,price,volumes,buy);card.append(img,info);root.append(card);
+function normalizeProduct(p) {
+  const legacy = String(p.volumes || '').match(/(\d+(?:[.,]\d+)?)\s*мл\s*[-–—:]\s*(\d+)\s*(?:р|₽)/i);
+  const perMl = Number(p.price_per_ml);
+  return {
+    id: p.id,
+    brand: String(p.brand || 'Матрешки Парфюм'),
+    name: String(p.name || 'Без названия'),
+    category: String(p.category || ''),
+    description: String(p.description || 'Нишевый аромат'),
+    pricePerMl: Number.isFinite(perMl) && perMl > 0 ? perMl : (legacy ? Number(legacy[2]) / Number(legacy[1].replace(',', '.')) : 0),
+    stockMl: Number(p.stock_ml || 0),
+    legacyVolumes: String(p.volumes || ''),
+    manager: String(p.manager || 'ciaonatalie'),
+    image: typeof p.photo === 'string' && /^https?:\/\//i.test(p.photo) ? p.photo : (typeof p.image === 'string' ? p.image : ''),
+    active: p.active === true || String(p.active) === '1' || String(p.active).toLowerCase() === 'true'
+  };
+}
+async function loadCatalog() {
+  const root = document.getElementById('products');
+  try {
+    const response = await fetch(API_URL, {cache:'no-store'});
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    const data = await response.json();
+    if (!data.ok || !Array.isArray(data.products)) throw new Error(data.error || 'Неверный ответ API');
+    products = data.products.map(normalizeProduct).filter(p => p.active);
+  } catch (error) {
+    console.error('Не удалось загрузить общий каталог:', error);
+    root.innerHTML = '<div class="empty">Не удалось загрузить каталог. Обнови страницу чуть позже.</div>';
+    return;
+  }
+  render();
+}
+function render() {
+ const q = document.getElementById('search').value.trim().toLowerCase();
+ const cat = document.getElementById('category').value;
+ const sort = document.getElementById('sort').value;
+ let list = products.filter(p => (p.name+' '+p.brand+' '+p.description).toLowerCase().includes(q) && (!cat || p.category===cat));
+ if(sort==='low') list.sort((a,b)=>a.pricePerMl-b.pricePerMl);
+ if(sort==='high') list.sort((a,b)=>b.pricePerMl-a.pricePerMl);
+ if(sort==='az') list.sort((a,b)=>a.name.localeCompare(b.name,'ru'));
+ const root = document.getElementById('products');
+ root.innerHTML = '';
+ if(!list.length) { root.innerHTML='<div class="empty">Пока нет опубликованных ароматов. Скоро здесь появятся новинки.</div>'; return; }
+ list.forEach(p => {
+  const card = document.createElement('article'); card.className='product';
+  const img = document.createElement('img'); img.src=p.image||placeholder; img.alt=p.brand+' '+p.name;
+  img.onerror=()=>{img.onerror=null;img.src=placeholder;};
+  const info=document.createElement('div'); info.className='product-info';
+  const brand=document.createElement('div'); brand.className='brand'; brand.textContent=p.brand;
+  const name=document.createElement('div'); name.className='name'; name.textContent=p.name;
+  const desc=document.createElement('div'); desc.className='desc'; desc.textContent=p.description;
+  const price=document.createElement('div'); price.className='price'; price.textContent=p.pricePerMl>0 ? p.pricePerMl.toLocaleString('ru-RU')+' ₽ / мл' : 'Цена уточняется';
+  const stock=document.createElement('div'); stock.className='desc'; stock.textContent=p.stockMl>0 ? 'В наличии: '+p.stockMl.toLocaleString('ru-RU')+' мл' : (p.legacyVolumes || 'Остаток уточняйте у менеджера');
+  const buy=document.createElement('button'); buy.className='buy'; buy.textContent='Уточнить и купить';
+  buy.addEventListener('click',()=>window.open(managerUrl(p.manager),'_blank','noopener'));
+  info.append(brand,name,desc,price,stock,buy); card.append(img,info); root.append(card);
  });
 }
 ['search','category','sort'].forEach(id=>document.getElementById(id).addEventListener(id==='search'?'input':'change',render));
@@ -130,4 +134,3 @@ loadCatalog();
 </script>
 </body>
 </html>
-
