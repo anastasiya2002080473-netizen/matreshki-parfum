@@ -86,7 +86,14 @@ function normalizeProduct(p) {
     pricePerMl: Number.isFinite(perMl) && perMl > 0 ? perMl : (legacy ? Number(legacy[2]) / Number(legacy[1].replace(',', '.')) : 0),
     stockMl: Number(p.stock_ml || 0),
     minOrderMl: Number(p.min_order_ml || 0),
-    bottleRemainder: Number(p.bottle_remainder || 0),
+    hasOriginalBottle: (() => {
+      const value = String(p.bottle_remainder ?? '').trim().toLowerCase();
+      if (['да', 'yes', 'true', '1'].includes(value)) return true;
+      if (['нет', 'no', 'false', '0', ''].includes(value)) return false;
+      // Compatibility with the old numeric field: any positive number means the bottle exists.
+      const numeric = Number(value.replace(',', '.'));
+      return Number.isFinite(numeric) && numeric > 0;
+    })(),
     legacyVolumes: String(p.volumes || ''),
     manager: String(p.manager || 'ciaonatalie'),
     image: typeof p.photo === 'string' && /^https?:\/\//i.test(p.photo) ? p.photo : (typeof p.image === 'string' ? p.image : ''),
@@ -131,7 +138,7 @@ function render() {
   const stock=document.createElement('div'); stock.className='desc'; stock.textContent=p.stockMl>0 ? 'В наличии: '+p.stockMl.toLocaleString('ru-RU')+' мл' : (p.legacyVolumes || 'Остаток уточняйте у администратора');
   const details=document.createDocumentFragment();
   if(p.minOrderMl>0){const minOrder=document.createElement('div');minOrder.className='product-detail';minOrder.textContent='Минимальный заказ: '+p.minOrderMl.toLocaleString('ru-RU')+' мл';details.appendChild(minOrder);}
-  if(p.bottleRemainder>0){const bottle=document.createElement('div');bottle.className='product-detail';bottle.textContent='В оригинальном флаконе: '+p.bottleRemainder.toLocaleString('ru-RU')+' мл';details.appendChild(bottle);}
+  const bottle=document.createElement('div');bottle.className='product-detail';bottle.textContent='Оригинальный флакон: '+(p.hasOriginalBottle?'Да':'Нет');details.appendChild(bottle);
   const buy=document.createElement('button'); buy.className='buy'; buy.textContent='Уточнить и купить';
   buy.addEventListener('click',()=>window.open(managerUrl(p.manager),'_blank','noopener'));
   info.append(brand,name,desc,price,stock,details,buy); card.append(img,info); root.append(card);
